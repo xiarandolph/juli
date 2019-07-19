@@ -11,10 +11,16 @@ class BalancePage extends StatefulWidget {
 
 class _BalancePageState extends State<BalancePage> {
   TextEditingController _textController = TextEditingController();
+  List<double> _expenses = <double>[];
   double _balance = 0.0;
 
-  void _addExpense() {
-    double expense = 0;
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _addExpense(double expense) {
+    _expenses.add(expense);
     setState(() {
       _balance += expense;
     });
@@ -34,9 +40,11 @@ class _BalancePageState extends State<BalancePage> {
             new FlatButton(
               child: new Text('Add'),
               onPressed: () {
-                setState(() {
-                  _balance += double.parse(_textController.text);
-                });
+                _addExpense(double.parse(_textController.text));
+                Navigator.of(context).pop();
+                // clear causes Android error: getTextBeforeCursor on inactive InputConnection
+                // https://github.com/flutter/flutter/issues/9471
+                //_textController.clear();
               },
             )
           ],
@@ -61,6 +69,14 @@ class _BalancePageState extends State<BalancePage> {
             Text(
               '$_balance',
               style: Theme.of(context).textTheme.display1,
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _expenses.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Text(_expenses[index].toString());
+                },
+              ),
             ),
           ],
         ),
